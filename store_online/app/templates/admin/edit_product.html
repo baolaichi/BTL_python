@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Edit Product{% endblock %}
+{% block title %}Chỉnh sửa sản phẩm{% endblock %}
 
 {% block content %}
 <div class="container">
@@ -8,7 +8,7 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
-                    <h4>Edit Product</h4>
+                    <h4>Chỉnh sửa sản phẩm</h4>
                 </div>
                 <div class="card-body">
                     <form method="POST" action="{{ url_for('product.edit_product', id=product.id) }}" enctype="multipart/form-data">
@@ -71,18 +71,25 @@
                             {% endif %}
                         </div>
                         <div class="mb-3">
-                            <label for="image" class="form-label">Product Image</label>
-                            <input type="file" class="form-control" id="image" name="image">
+                            {{ form.image.label(class="form-label") }}
+                            {{ form.image(class="form-control") }}
+                            {% if form.image.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.image.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                             {% if product.image %}
                                 <div class="mt-2">
-                                    <small>Current image:</small>
-                                    <img src="{{ url_for('static', filename='images/products/' + product.image) }}"
+                                    <small>Hình ảnh hiện tại:</small>
+                                    <img src="{{ product.image_url() }}" 
                                          class="img-thumbnail mt-1" style="max-height: 100px;">
                                 </div>
                             {% endif %}
                         </div>
-                        <button type="submit" class="btn btn-primary">Update Product</button>
-                        <a href="{{ url_for('product.detail', id=product.id) }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Cập nhật sản phẩm</button>
+                        <a href="{{ url_for('product.detail', id=product.id) }}" class="btn btn-secondary">Hủy</a>
                     </form>
                 </div>
             </div>

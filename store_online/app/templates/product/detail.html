@@ -4,7 +4,7 @@
 <div class="container">
     <div class="row">
         <div class="col-md-6">
-            <img src="{{ url_for('static', filename='images/products/' + product.image) if product.image else url_for('static', filename='images/placeholder.png') }}"
+            <img src="{{ product.image_url() }}"
                  class="img-fluid rounded" alt="{{ product.name }}">
         </div>
         <div class="col-md-6">
@@ -13,26 +13,26 @@
                 {% if product.get_average_rating() > 0 %}
                     <span class="rating">
                         {{ product.get_average_rating() }} <i class="bi bi-star-fill"></i>
-                        ({{ product.reviews.count() }} reviews)
+                        ({{ product.reviews.count() }} đánh giá)
                     </span>
                 {% else %}
-                    <span class="text-muted">No reviews yet</span>
+                    <span class="text-muted">Chưa có đánh giá</span>
                 {% endif %}
             </div>
-            <h3 class="text-primary">${{ "%.2f"|format(product.price) }}</h3>
+            <h3 class="text-primary">{{ "%.2f"|format(product.price) }}đ</h3>
 
             <div class="mb-3">
                 {% if product.stock > 0 %}
-                    <span class="text-success">In Stock ({{ product.stock }} available)</span>
+                    <span class="text-success">Còn hàng ({{ product.stock }} sản phẩm)</span>
                 {% else %}
-                    <span class="text-danger">Out of Stock</span>
+                    <span class="text-danger">Hết hàng</span>
                 {% endif %}
             </div>
 
             <p>{{ product.description }}</p>
 
             <div class="mb-3">
-                <strong>Category:</strong> {{ product.category|title }}
+                <strong>Danh mục:</strong> {{ product.category|title }}
             </div>
 
             {% if product.stock > 0 %}
@@ -42,7 +42,7 @@
                             <input type="number" class="form-control" name="quantity" value="1" min="1" max="{{ product.stock }}">
                         </div>
                         <div class="col-md-9">
-                            <button type="submit" class="btn btn-primary">Add to Cart</button>
+                            <button type="submit" class="btn btn-primary">Thêm vào giỏ hàng</button>
                         </div>
                     </div>
                 </form>
@@ -52,16 +52,16 @@
 
     <div class="row mt-5">
         <div class="col-md-12">
-            <h3>Product Reviews</h3>
+            <h3>Đánh giá sản phẩm</h3>
 
             {% if current_user.is_authenticated %}
                 <div class="card mb-4">
                     <div class="card-body">
-                        <h5 class="card-title">Write a Review</h5>
+                        <h5 class="card-title">Viết đánh giá</h5>
                         <form method="POST" action="{{ url_for('product.detail', id=product.id) }}">
                             {{ form.hidden_tag() }}
                             <div class="mb-3">
-                                <label class="form-label">Rating</label>
+                                <label class="form-label">Xếp hạng</label>
                                 <div class="star-rating">
                                     {% for i in range(5, 0, -1) %}
                                         <i class="bi bi-star-fill{% if form.rating.data|int == i %} text-warning{% endif %}"
@@ -81,13 +81,13 @@
                                 {{ form.comment.label(class="form-label") }}
                                 {{ form.comment(class="form-control", rows=3) }}
                             </div>
-                            <button type="submit" class="btn btn-primary">Submit Review</button>
+                            <button type="submit" class="btn btn-primary">Gửi đánh giá</button>
                         </form>
                     </div>
                 </div>
             {% else %}
                 <div class="alert alert-info">
-                    Please <a href="{{ url_for('auth.login') }}">login</a> to write a review.
+                    Vui lòng <a href="{{ url_for('auth.login') }}">đăng nhập</a> để viết đánh giá.
                 </div>
             {% endif %}
 
@@ -103,7 +103,7 @@
                                     {% endfor %}
                                 </div>
                             </div>
-                            <small class="text-muted">{{ review.created_at.strftime('%B %d, %Y') }}</small>
+                            <small class="text-muted">{{ review.created_at.strftime('%d/%m/%Y') }}</small>
                             {% if review.comment %}
                                 <p class="card-text mt-2">{{ review.comment }}</p>
                             {% endif %}
@@ -112,7 +112,7 @@
                 {% endfor %}
             {% else %}
                 <div class="alert alert-info">
-                    No reviews yet. Be the first to review this product!
+                    Chưa có đánh giá nào. Hãy là người đầu tiên đánh giá sản phẩm này!
                 </div>
             {% endif %}
         </div>

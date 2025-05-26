@@ -1,6 +1,6 @@
 <div class="col-md-3 mb-4">
     <div class="card product-card h-100">
-        <img src="{{ url_for('static', filename='images/products/' + product.image) if product.image else url_for('static', filename='images/placeholder.png') }}"
+        <img src="{{ product.image_url() }}"
              class="card-img-top product-img" alt="{{ product.name }}">
         <div class="card-body d-flex flex-column">
             <h5 class="card-title">{{ product.name }}</h5>

@@ -1,12 +1,12 @@
 from flask_wtf import FlaskForm
-from wtforms import TextAreaField, SelectField, SubmitField
+from wtforms import TextAreaField, RadioField, SubmitField
 from wtforms.validators import DataRequired
 
 class CheckoutForm(FlaskForm):
-    shipping_address = TextAreaField('Shipping Address', validators=[DataRequired()])
-    payment_method = SelectField('Payment Method', choices=[
-        ('credit_card', 'Credit Card'),
+    shipping_address = TextAreaField('Địa chỉ giao hàng', validators=[DataRequired()])
+    payment_method = RadioField('Phương thức thanh toán', choices=[
+        ('credit_card', 'Thẻ tín dụng'),
         ('paypal', 'PayPal'),
-        ('cod', 'Cash on Delivery')
+        ('cod', 'Thanh toán khi nhận hàng')
     ], validators=[DataRequired()])
-    submit = SubmitField('Place Order')
+    submit = SubmitField('Đặt hàng')

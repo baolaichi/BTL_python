@@ -1,40 +1,65 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container">
-    <div class="p-5 mb-4 bg-light rounded-3">
-        <div class="container-fluid py-5">
-            <h1 class="display-5 fw-bold">Welcome to Our Store</h1>
-            <p class="col-md-8 fs-4">Discover amazing products at great prices.</p>
-            <a href="{{ url_for('product.list_products') }}" class="btn btn-primary btn-lg">Shop Now</a>
-        </div>
+<div id="eventCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+    <div class="carousel-indicators">
+        {% for event in events %}
+        <button type="button" data-bs-target="#eventCarousel" data-bs-slide-to="{{ loop.index0 }}" {% if loop.first %}class="active"{% endif %}></button>
+        {% endfor %}
     </div>
-
-    <h2 class="mb-4">Featured Products</h2>
-    <div class="row">
-        {% for product in featured_products %}
-        <div class="col-md-3 mb-4">
-            <div class="card product-card h-100">
-                <img src="{{ url_for('static', filename='images/products/' + product.image) if product.image else url_for('static', filename='images/placeholder.png') }}"
-                     class="card-img-top product-img" alt="{{ product.name }}">
-                <div class="card-body d-flex flex-column">
-                    <h5 class="card-title">{{ product.name }}</h5>
-                    <p class="card-text">{{ product.description|truncate(50) }}</p>
-                    <div class="mt-auto">
-                        <div class="mb-2">
-                            <span class="fw-bold">${{ "%.2f"|format(product.price) }}</span>
-                            {% if product.get_average_rating() > 0 %}
-                                <span class="float-end rating">
-                                    {{ product.get_average_rating() }} <i class="bi bi-star-fill"></i>
-                                </span>
-                            {% endif %}
-                        </div>
-                        <a href="{{ url_for('product.detail', id=product.id) }}" class="btn btn-sm btn-outline-primary">View Details</a>
-                    </div>
-                </div>
+    <div class="carousel-inner">
+        {% for event in events %}
+        <div class="carousel-item {% if loop.first %}active{% endif %}">
+            <img src="{{ event.image_url() }}" class="d-block w-100" alt="{{ event.title }}" style="height: 400px; object-fit: cover;">
+            <div class="carousel-caption d-none d-md-block">
+                <h2>{{ event.title }}</h2>
+                <p>{{ event.description }}</p>
             </div>
         </div>
         {% endfor %}
     </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#eventCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#eventCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
+</div>
+
+<div class="p-5 mb-4 bg-light rounded-3">
+    <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold">Chào mừng đến với LSB Store</h1>
+        <p class="col-md-8 fs-4">Khám phá những sản phẩm tuyệt vời với giá cả phải chăng.</p>
+        <a href="{{ url_for('product.list_products') }}" class="btn btn-primary btn-lg">Mua sắm ngay</a>
+    </div>
+</div>
+
+<h2 class="mb-4">Sản phẩm nổi bật</h2>
+<div class="row">
+    {% for product in featured_products %}
+    <div class="col-md-3 mb-4">
+        <div class="card product-card h-100">
+            <img src="{{ product.image_url() }}"
+                 class="card-img-top product-img" alt="{{ product.name }}">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">{{ product.name }}</h5>
+                <p class="card-text">{{ product.description|truncate(50) }}</p>
+                <div class="mt-auto">
+                    <div class="mb-2">
+                        <span class="fw-bold">{{ "%.2f"|format(product.price) }}đ</span>
+                        {% if product.get_average_rating() > 0 %}
+                            <span class="float-end rating">
+                                {{ product.get_average_rating() }} <i class="bi bi-star-fill"></i>
+                            </span>
+                        {% endif %}
+                    </div>
+                    <a href="{{ url_for('product.detail', id=product.id) }}" class="btn btn-sm btn-outline-primary">Xem chi tiết</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
 </div>
 {% endblock %}

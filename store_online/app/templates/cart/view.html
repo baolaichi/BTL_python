@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="container">
-    <h1 class="mb-4">Your Shopping Cart</h1>
+    <h1 class="mb-4">Giỏ hàng của bạn</h1>
 
     {% if cart_items %}
     <div class="row">
@@ -12,10 +12,10 @@
                     <table class="table">
                         <thead>
                             <tr>
-                                <th>Product</th>
-                                <th>Price</th>
-                                <th>Quantity</th>
-                                <th>Total</th>
+                                <th>Sản phẩm</th>
+                                <th>Giá</th>
+                                <th>Số lượng</th>
+                                <th>Tổng</th>
                                 <th></th>
                             </tr>
                         </thead>
@@ -32,7 +32,7 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td>${{ "%.2f"|format(item.product.price) }}</td>
+                                <td>{{ "%.2f"|format(item.product.price) }}đ</td>
                                 <td>
                                     <div class="d-flex">
                                         <button class="btn btn-sm btn-outline-secondary update-cart"
@@ -42,7 +42,7 @@
                                                 data-item-id="{{ item.id }}" data-action="increase">+</button>
                                     </div>
                                 </td>
-                                <td class="item-total-{{ item.id }}">${{ "%.2f"|format(item.get_total_price()) }}</td>
+                                <td class="item-total-{{ item.id }}">{{ "%.2f"|format(item.get_total_price()) }}đ</td>
                                 <td>
                                     <button class="btn btn-sm btn-danger update-cart"
                                             data-item-id="{{ item.id }}" data-action="remove">
@@ -59,30 +59,30 @@
         <div class="col-md-4">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title">Order Summary</h5>
+                    <h5 class="card-title">Tổng đơn hàng</h5>
                     <div class="d-flex justify-content-between mb-2">
-                        <span>Subtotal:</span>
-                        <span>${{ "%.2f"|format(total) }}</span>
+                        <span>Tạm tính:</span>
+                        <span>{{ "%.2f"|format(total) }}đ</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
-                        <span>Shipping:</span>
-                        <span>Free</span>
+                        <span>Phí vận chuyển:</span>
+                        <span>Miễn phí</span>
                     </div>
                     <hr>
                     <div class="d-flex justify-content-between fw-bold">
-                        <span>Total:</span>
-                        <span class="cart-total">${{ "%.2f"|format(total) }}</span>
+                        <span>Tổng cộng:</span>
+                        <span class="cart-total">{{ "%.2f"|format(total) }}đ</span>
                     </div>
                     <hr>
-                    <a href="{{ url_for('order.checkout') }}" class="btn btn-primary w-100">Proceed to Checkout</a>
-                    <a href="{{ url_for('product.list_products') }}" class="btn btn-outline-secondary w-100 mt-2">Continue Shopping</a>
+                    <a href="{{ url_for('order.checkout') }}" class="btn btn-primary w-100">Thanh toán</a>
+                    <a href="{{ url_for('product.list_products') }}" class="btn btn-outline-secondary w-100 mt-2">Tiếp tục mua sắm</a>
                 </div>
             </div>
         </div>
     </div>
     {% else %}
     <div class="alert alert-info">
-        Your cart is empty. <a href="{{ url_for('product.list_products') }}">Browse our products</a> to add items to your cart.
+        Giỏ hàng của bạn đang trống. <a href="{{ url_for('product.list_products') }}">Xem sản phẩm</a> để thêm vào giỏ hàng.
     </div>
     {% endif %}
 </div>
