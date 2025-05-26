@@ -27,6 +27,16 @@ def save_event_image(form_picture):
     
     return picture_fn
 
+@event_bp.route('/')
+def list_events():
+    """Hiển thị danh sách sự kiện đang diễn ra"""
+    events = Event.query.filter(
+        Event.is_active == True,
+        Event.start_date <= datetime.utcnow(),
+        Event.end_date >= datetime.utcnow()
+    ).order_by(Event.start_date.desc()).all()
+    return render_template('event/list.html', events=events)
+
 @event_bp.route('/admin/events')
 @login_required
 def admin_events():
@@ -58,7 +68,7 @@ def add_event():
             image=image_file,
             start_date=start_date,
             end_date=end_date,
-            is_active=form.is_active.data
+            status='active' if form.is_active.data else 'inactive'
         )
         db.session.add(event)
         db.session.commit()
@@ -92,7 +102,7 @@ def edit_event(id):
         
         event.title = form.title.data
         event.description = form.description.data
-        event.is_active = form.is_active.data
+        event.status = 'active' if form.is_active.data else 'inactive'
         
         db.session.commit()
         flash('Sự kiện đã được cập nhật thành công!', 'success')

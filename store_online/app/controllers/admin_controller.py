@@ -1,8 +1,13 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from app.models.user import User
+from app.models.order import Order
+from app.models.product import Product
+from app.models.event import Event
 from app import db
 from werkzeug.security import generate_password_hash
+from sqlalchemy import func
+from datetime import datetime, timedelta
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -14,6 +19,44 @@ def admin_required(f):
         return f(*args, **kwargs)
     decorated_function.__name__ = f.__name__
     return decorated_function
+
+@admin_bp.route('/dashboard')
+@login_required
+@admin_required
+def dashboard():
+    # Thống kê tổng quan
+    total_users = User.query.filter_by(is_admin=False).count()
+    total_products = Product.query.count()
+    total_orders = Order.query.count()
+    total_events = Event.query.count()
+    
+    # Doanh thu trong 30 ngày gần nhất
+    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+    recent_revenue = db.session.query(
+        func.sum(Order.total_amount)
+    ).filter(
+        Order.created_at >= thirty_days_ago,
+        Order.status == 'completed'
+    ).scalar() or 0
+    
+    # Đơn hàng gần đây
+    recent_orders = Order.query.order_by(
+        Order.created_at.desc()
+    ).limit(5).all()
+    
+    # Sản phẩm sắp hết hàng
+    low_stock_products = Product.query.filter(
+        Product.stock < 10
+    ).limit(5).all()
+    
+    return render_template('admin/dashboard.html',
+                         total_users=total_users,
+                         total_products=total_products,
+                         total_orders=total_orders,
+                         total_events=total_events,
+                         recent_revenue=recent_revenue,
+                         recent_orders=recent_orders,
+                         low_stock_products=low_stock_products)
 
 @admin_bp.route('/customers')
 @login_required

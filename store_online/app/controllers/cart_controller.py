@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
-from app.models.cart import CartItem
+from app.models.cart import CartItem, Cart
 from app.models.product import Product
 from app import db
 
@@ -10,7 +10,13 @@ cart_bp = Blueprint('cart', __name__)
 @cart_bp.route('/')
 @login_required
 def view_cart():
-    cart_items = CartItem.query.filter_by(user_id=current_user.id).all()
+    cart = Cart.query.filter_by(user_id=current_user.id).first()
+    if not cart:
+        cart = Cart(user_id=current_user.id)
+        db.session.add(cart)
+        db.session.commit()
+    
+    cart_items = cart.items
     total = sum(item.get_total_price() for item in cart_items)
     return render_template('cart/view.html', cart_items=cart_items, total=total)
 
@@ -24,8 +30,14 @@ def add_to_cart(product_id):
         flash('This product is out of stock', 'danger')
         return redirect(url_for('product.detail', id=product_id))
 
+    cart = Cart.query.filter_by(user_id=current_user.id).first()
+    if not cart:
+        cart = Cart(user_id=current_user.id)
+        db.session.add(cart)
+        db.session.commit()
+
     cart_item = CartItem.query.filter_by(
-        user_id=current_user.id,
+        cart_id=cart.id,
         product_id=product_id
     ).first()
 
@@ -36,7 +48,7 @@ def add_to_cart(product_id):
         cart_item.quantity += 1
     else:
         cart_item = CartItem(
-            user_id=current_user.id,
+            cart_id=cart.id,
             product_id=product_id,
             quantity=1
         )
@@ -51,8 +63,9 @@ def add_to_cart(product_id):
 @login_required
 def update_cart(item_id):
     cart_item = CartItem.query.get_or_404(item_id)
+    cart = Cart.query.get_or_404(cart_item.cart_id)
 
-    if cart_item.user_id != current_user.id:
+    if cart.user_id != current_user.id:
         flash('You do not have permission to do that', 'danger')
         return redirect(url_for('cart.view_cart'))
 
@@ -86,8 +99,9 @@ def update_cart(item_id):
 @login_required
 def api_update_cart(item_id):
     cart_item = CartItem.query.get_or_404(item_id)
+    cart = Cart.query.get_or_404(cart_item.cart_id)
 
-    if cart_item.user_id != current_user.id:
+    if cart.user_id != current_user.id:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 403
 
     action = request.json.get('action')
@@ -116,7 +130,7 @@ def api_update_cart(item_id):
         response_data['removed'] = True
 
     if response_data.get('success', False):
-        cart_items = CartItem.query.filter_by(user_id=current_user.id).all()
+        cart_items = cart.items
         total = sum(item.get_total_price() for item in cart_items)
         response_data.update({
             'quantity': cart_item.quantity if not response_data.get('removed') else 0,

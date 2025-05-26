@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app
 from flask_login import login_required, current_user
 from app.models.product import Product
+from app.models.category import Category
 from app.models.review import Review
 from app.views.product_view import ProductForm, ReviewForm
 from app import db
@@ -31,23 +32,22 @@ def save_picture(form_picture):
 def list_products():
     page = request.args.get('page', 1, type=int)
     search_query = request.args.get('search', '')
-    category = request.args.get('category', '')
+    category_id = request.args.get('category', type=int)
 
     query = Product.query
 
     if search_query:
         query = query.filter(Product.name.ilike(f'%{search_query}%'))
 
-    if category:
-        query = query.filter_by(category=category)
+    if category_id:
+        query = query.filter_by(category_id=category_id)
 
     products = query.paginate(page=page, per_page=8)
+    categories = Category.query.all()
 
-    categories = db.session.query(Product.category.distinct()).all()
-    categories = [c[0] for c in categories if c[0]]
-
-    return render_template('product/list.html', products=products,
-                           search_query=search_query, categories=categories)
+    return render_template('product/list_products.html', products=products,
+                         search_query=search_query, categories=categories,
+                         selected_category=category_id)
 
 
 @product_bp.route('/<int:id>', methods=['GET', 'POST'])
@@ -71,7 +71,7 @@ def detail(id):
         flash('Your review has been submitted!', 'success')
         return redirect(url_for('product.detail', id=product.id))
 
-    reviews = product.reviews.order_by(Review.created_at.desc()).all()
+    reviews = Review.query.filter_by(product_id=product.id).order_by(Review.created_at.desc()).all()
     return render_template('product/detail.html', product=product,
                            form=form, reviews=reviews)
 
@@ -95,7 +95,7 @@ def add_product():
             description=form.description.data,
             price=form.price.data,
             stock=form.stock.data,
-            category=form.category.data,
+            category_id=form.category.data,
             image=image_file
         )
         db.session.add(product)
@@ -134,7 +134,7 @@ def edit_product(id):
         product.description = form.description.data
         product.price = form.price.data
         product.stock = form.stock.data
-        product.category = form.category.data
+        product.category_id = form.category.data
         db.session.commit()
         flash('Product has been updated!', 'success')
         return redirect(url_for('product.detail', id=product.id))
