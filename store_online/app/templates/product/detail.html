@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <img src="{{ url_for('static', filename='images/products/' + product.image) if product.image else url_for('static', filename='images/placeholder.png') }}"
+                 class="img-fluid rounded" alt="{{ product.name }}">
+        </div>
+        <div class="col-md-6">
+            <h1>{{ product.name }}</h1>
+            <div class="mb-3">
+                {% if product.get_average_rating() > 0 %}
+                    <span class="rating">
+                        {{ product.get_average_rating() }} <i class="bi bi-star-fill"></i>
+                        ({{ product.reviews.count() }} reviews)
+                    </span>
+                {% else %}
+                    <span class="text-muted">No reviews yet</span>
+                {% endif %}
+            </div>
+            <h3 class="text-primary">${{ "%.2f"|format(product.price) }}</h3>
+
+            <div class="mb-3">
+                {% if product.stock > 0 %}
+                    <span class="text-success">In Stock ({{ product.stock }} available)</span>
+                {% else %}
+                    <span class="text-danger">Out of Stock</span>
+                {% endif %}
+            </div>
+
+            <p>{{ product.description }}</p>
+
+            <div class="mb-3">
+                <strong>Category:</strong> {{ product.category|title }}
+            </div>
+
+            {% if product.stock > 0 %}
+                <form method="POST" action="{{ url_for('cart.add_to_cart', product_id=product.id) }}">
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <input type="number" class="form-control" name="quantity" value="1" min="1" max="{{ product.stock }}">
+                        </div>
+                        <div class="col-md-9">
+                            <button type="submit" class="btn btn-primary">Add to Cart</button>
+                        </div>
+                    </div>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <h3>Product Reviews</h3>
+
+            {% if current_user.is_authenticated %}
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Write a Review</h5>
+                        <form method="POST" action="{{ url_for('product.detail', id=product.id) }}">
+                            {{ form.hidden_tag() }}
+                            <div class="mb-3">
+                                <label class="form-label">Rating</label>
+                                <div class="star-rating">
+                                    {% for i in range(5, 0, -1) %}
+                                        <i class="bi bi-star-fill{% if form.rating.data|int == i %} text-warning{% endif %}"
+                                           data-rating="{{ i }}" style="cursor: pointer;"></i>
+                                    {% endfor %}
+                                    {{ form.rating() }}
+                                </div>
+                                {% if form.rating.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.rating.errors %}
+                                            <small>{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                {{ form.comment.label(class="form-label") }}
+                                {{ form.comment(class="form-control", rows=3) }}
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit Review</button>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    Please <a href="{{ url_for('auth.login') }}">login</a> to write a review.
+                </div>
+            {% endif %}
+
+            {% if reviews %}
+                {% for review in reviews %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <h5 class="card-title">{{ review.author.username }}</h5>
+                                <div class="text-warning">
+                                    {% for i in range(5) %}
+                                        <i class="bi bi-star-fill{% if i >= review.rating %} text-secondary{% endif %}"></i>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <small class="text-muted">{{ review.created_at.strftime('%B %d, %Y') }}</small>
+                            {% if review.comment %}
+                                <p class="card-text mt-2">{{ review.comment }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="alert alert-info">
+                    No reviews yet. Be the first to review this product!
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Star rating interaction
+    document.querySelectorAll('.star-rating i').forEach(star => {
+        star.addEventListener('click', function() {
+            const rating = this.dataset.rating;
+            document.querySelector('#rating').value = rating;
+
+            // Update star display
+            document.querySelectorAll('.star-rating i').forEach(s => {
+                if (s.dataset.rating <= rating) {
+                    s.classList.add('text-warning');
+                } else {
+                    s.classList.remove('text-warning');
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}
