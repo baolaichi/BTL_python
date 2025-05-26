@@ -7,26 +7,27 @@ class Order(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    created_at = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    status = db.Column(db.String(20), default='pending')
     total_amount = db.Column(db.Float, nullable=False)
-    shipping_address = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(20), default='pending')  # pending, processing, completed, cancelled
+    shipping_address = db.Column(db.String(200), nullable=False)
     payment_method = db.Column(db.String(50), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    items = db.relationship('OrderItem', backref='order', lazy='dynamic')
+    # Relationships
+    user = db.relationship('User', back_populates='orders')
+    items = db.relationship('OrderItem', back_populates='order', cascade='all, delete-orphan')
 
     def __repr__(self):
         return f'<Order {self.id}>'
 
-
-class OrderItem(db.Model):
-    __tablename__ = 'order_items'
-
-    id = db.Column(db.Integer, primary_key=True)
-    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), nullable=False)
-    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
-    quantity = db.Column(db.Integer, nullable=False)
-    price = db.Column(db.Float, nullable=False)
-
-    def __repr__(self):
-        return f'<OrderItem {self.id}>'
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'total_amount': self.total_amount,
+            'status': self.status,
+            'shipping_address': self.shipping_address,
+            'payment_method': self.payment_method,
+            'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'items': [item.to_dict() for item in self.items]
+        }

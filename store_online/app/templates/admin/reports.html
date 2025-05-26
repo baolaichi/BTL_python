@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h2 mb-0">Báo cáo thống kê</h1>
+            <p class="text-muted">Xuất báo cáo để phân tích dữ liệu</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Top Products Report -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-graph-up-arrow display-4 text-primary me-3"></i>
+                        <div>
+                            <h3 class="h5 mb-1">Sản phẩm bán chạy</h3>
+                            <p class="text-muted mb-0">Top 100 sản phẩm bán chạy nhất</p>
+                        </div>
+                    </div>
+                    <p class="card-text">Báo cáo này bao gồm thông tin về số lượng đã bán, doanh thu và tồn kho của từng sản phẩm.</p>
+                    <a href="{{ url_for('report.export_top_products') }}" class="btn btn-primary">
+                        <i class="bi bi-download"></i> Tải xuống CSV
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Customers Report -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-people display-4 text-primary me-3"></i>
+                        <div>
+                            <h3 class="h5 mb-1">Khách hàng VIP</h3>
+                            <p class="text-muted mb-0">Top 100 khách hàng mua nhiều nhất</p>
+                        </div>
+                    </div>
+                    <p class="card-text">Báo cáo này bao gồm thông tin về số đơn hàng và tổng chi tiêu của từng khách hàng.</p>
+                    <a href="{{ url_for('report.export_top_customers') }}" class="btn btn-primary">
+                        <i class="bi bi-download"></i> Tải xuống CSV
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sales by Date Report -->
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-calendar-check display-4 text-primary me-3"></i>
+                        <div>
+                            <h3 class="h5 mb-1">Doanh số theo ngày</h3>
+                            <p class="text-muted mb-0">Thống kê doanh số theo từng ngày</p>
+                        </div>
+                    </div>
+                    <p class="card-text">Báo cáo này bao gồm thông tin về số đơn hàng và doanh thu theo từng ngày.</p>
+                    <a href="{{ url_for('report.export_sales_by_date') }}" class="btn btn-primary">
+                        <i class="bi bi-download"></i> Tải xuống CSV
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instructions -->
+    <div class="card mt-4 shadow-sm">
+        <div class="card-body">
+            <h3 class="h5 mb-3">Hướng dẫn sử dụng</h3>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="d-flex mb-3">
+                        <i class="bi bi-1-circle-fill text-primary me-2"></i>
+                        <p class="mb-0">Chọn loại báo cáo cần xuất</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex mb-3">
+                        <i class="bi bi-2-circle-fill text-primary me-2"></i>
+                        <p class="mb-0">Nhấn nút "Tải xuống CSV"</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="d-flex mb-3">
+                        <i class="bi bi-3-circle-fill text-primary me-2"></i>
+                        <p class="mb-0">Mở file CSV bằng Excel hoặc phần mềm phân tích dữ liệu</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

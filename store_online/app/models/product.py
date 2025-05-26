@@ -9,25 +9,37 @@ class Product(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=False)
+    description = db.Column(db.Text)
     price = db.Column(db.Float, nullable=False)
-    image = db.Column(db.String(100))
-    stock = db.Column(db.Integer, nullable=False, default=0)
+    stock = db.Column(db.Integer, nullable=False)
+    image = db.Column(db.String(200))
     category = db.Column(db.String(50))
     
     reviews = db.relationship('Review', backref='product', lazy='dynamic')
-    order_items = db.relationship('OrderItem', backref='product', lazy='dynamic')
+    order_items = db.relationship('OrderItem', back_populates='product')
+    ratings = db.relationship('Rating', back_populates='product', cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<Product {self.name}>'
     
     def get_average_rating(self):
-        if self.reviews.count() == 0:
+        if not self.ratings:
             return 0
-        total = sum(review.rating for review in self.reviews)
-        return round(total / self.reviews.count(), 1)
+        return sum(r.rating for r in self.ratings) / len(self.ratings)
     
     def image_url(self):
         if self.image:
-            return url_for('static', filename=f'images/products/{self.image}')
-        return url_for('static', filename='images/placeholder.png')
+            return f'/static/images/products/{self.image}'
+        return '/static/images/no-image.jpg'
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'price': self.price,
+            'stock': self.stock,
+            'image': self.image_url(),
+            'average_rating': self.get_average_rating(),
+            'category': self.category
+        }

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Đơn hàng của tôi</h1>
+
+    {% if orders %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Mã đơn hàng</th>
+                    <th>Ngày đặt</th>
+                    <th>Tổng tiền</th>
+                    <th>Trạng thái</th>
+                    <th>Phương thức thanh toán</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>#{{ order.id }}</td>
+                    <td>{{ order.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>{{ "{:,.0f}".format(order.total_amount) }} VNĐ</td>
+                    <td>
+                        <span class="badge {% if order.status == 'pending' %}bg-warning
+                                          {% elif order.status == 'processing' %}bg-info
+                                          {% elif order.status == 'completed' %}bg-success
+                                          {% else %}bg-danger{% endif %}">
+                            {% if order.status == 'pending' %}Chờ xử lý
+                            {% elif order.status == 'processing' %}Đang xử lý
+                            {% elif order.status == 'completed' %}Hoàn thành
+                            {% else %}Đã hủy{% endif %}
+                        </span>
+                    </td>
+                    <td>
+                        {% if order.payment_method == 'cod' %}
+                            Thanh toán khi nhận hàng
+                        {% else %}
+                            Chuyển khoản ngân hàng
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('order.order_detail', order_id=order.id) }}" 
+                           class="btn btn-sm btn-primary">
+                            <i class="bi bi-eye"></i> Xem chi tiết
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> Bạn chưa có đơn hàng nào.
+        <a href="{{ url_for('product.list_products') }}" class="alert-link">Mua sắm ngay</a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.table th {
+    font-weight: 600;
+}
+.badge {
+    font-size: 0.875rem;
+    padding: 0.5em 0.75em;
+}
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+</style>
+{% endblock %} 

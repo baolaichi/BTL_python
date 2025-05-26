@@ -4,59 +4,77 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Thêm sự kiện mới</h4>
-                </div>
-                <div class="card-body">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h1 class="h2 mb-0">Thêm sự kiện mới</h1>
+                            <p class="text-muted">Tạo sự kiện mới để quảng bá cửa hàng</p>
+                        </div>
+                        <a href="{{ url_for('event.admin_events') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+
                     <form method="POST" enctype="multipart/form-data">
                         {{ form.hidden_tag() }}
                         
-                        <div class="mb-3">
-                            {{ form.title.label(class="form-label") }}
-                            {{ form.title(class="form-control") }}
+                        <div class="mb-4">
+                            <label for="title" class="form-label">Tiêu đề sự kiện</label>
+                            {{ form.title(class="form-control form-control-lg", placeholder="Nhập tiêu đề sự kiện") }}
                             {% if form.title.errors %}
-                                <div class="text-danger">
-                                    {% for error in form.title.errors %}
-                                        <small>{{ error }}</small>
-                                    {% endfor %}
-                                </div>
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.title.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
                             {% endif %}
                         </div>
-                        
-                        <div class="mb-3">
-                            {{ form.description.label(class="form-label") }}
-                            {{ form.description(class="form-control", rows=3) }}
+
+                        <div class="mb-4">
+                            <label for="description" class="form-label">Mô tả</label>
+                            {{ form.description(class="form-control", rows="4", placeholder="Nhập mô tả chi tiết về sự kiện") }}
                             {% if form.description.errors %}
-                                <div class="text-danger">
-                                    {% for error in form.description.errors %}
-                                        <small>{{ error }}</small>
-                                    {% endfor %}
-                                </div>
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.description.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
                             {% endif %}
                         </div>
-                        
-                        <div class="mb-3">
-                            {{ form.image.label(class="form-label") }}
-                            {{ form.image(class="form-control") }}
+
+                        <div class="mb-4">
+                            <label for="image" class="form-label">Hình ảnh</label>
+                            {{ form.image(class="form-control", accept="image/*") }}
                             {% if form.image.errors %}
-                                <div class="text-danger">
-                                    {% for error in form.image.errors %}
-                                        <small>{{ error }}</small>
-                                    {% endfor %}
-                                </div>
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.image.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
                             {% endif %}
-                            <small class="text-muted">Kích thước đề xuất: 1200x400 pixels</small>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i> 
+                                Kích thước khuyến nghị: 1920x600 pixels. Định dạng: JPG, PNG.
+                            </div>
                         </div>
-                        
-                        <div class="mb-3 form-check">
-                            {{ form.is_active(class="form-check-input") }}
-                            {{ form.is_active.label(class="form-check-label") }}
+
+                        <div class="mb-4">
+                            <div class="form-check form-switch">
+                                {{ form.is_active(class="form-check-input") }}
+                                <label class="form-check-label" for="is_active">Đang hoạt động</label>
+                            </div>
+                            {% if form.is_active.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.is_active.errors %}
+                                {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
                         </div>
-                        
+
                         <div class="d-grid gap-2">
-                            {{ form.submit(class="btn btn-primary") }}
-                            <a href="{{ url_for('event.admin_events') }}" class="btn btn-secondary">Hủy</a>
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
                         </div>
                     </form>
                 </div>

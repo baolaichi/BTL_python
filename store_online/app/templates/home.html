@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div id="eventCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+<!-- Slideshow -->
+<div id="eventCarousel" class="carousel slide mb-5" data-bs-ride="carousel">
     <div class="carousel-indicators">
         {% for event in events %}
         <button type="button" data-bs-target="#eventCarousel" data-bs-slide-to="{{ loop.index0 }}" {% if loop.first %}class="active"{% endif %}></button>
@@ -10,10 +11,11 @@
     <div class="carousel-inner">
         {% for event in events %}
         <div class="carousel-item {% if loop.first %}active{% endif %}">
-            <img src="{{ event.image_url() }}" class="d-block w-100" alt="{{ event.title }}" style="height: 400px; object-fit: cover;">
-            <div class="carousel-caption d-none d-md-block">
-                <h2>{{ event.title }}</h2>
-                <p>{{ event.description }}</p>
+            <img src="{{ event.image_url() }}" class="d-block w-100" alt="{{ event.title }}" style="height: 500px; object-fit: cover;">
+            <div class="carousel-caption d-none d-md-block" style="background: rgba(0, 0, 0, 0.5); padding: 20px; border-radius: 10px;">
+                <h2 class="display-4 fw-bold">{{ event.title }}</h2>
+                <p class="lead">{{ event.description }}</p>
+                <a href="{{ url_for('product.list_products') }}" class="btn btn-primary btn-lg">Mua ngay</a>
             </div>
         </div>
         {% endfor %}
@@ -28,38 +30,137 @@
     </button>
 </div>
 
-<div class="p-5 mb-4 bg-light rounded-3">
-    <div class="container-fluid py-5">
-        <h1 class="display-5 fw-bold">Chào mừng đến với LSB Store</h1>
-        <p class="col-md-8 fs-4">Khám phá những sản phẩm tuyệt vời với giá cả phải chăng.</p>
-        <a href="{{ url_for('product.list_products') }}" class="btn btn-primary btn-lg">Mua sắm ngay</a>
-    </div>
-</div>
-
-<h2 class="mb-4">Sản phẩm nổi bật</h2>
-<div class="row">
-    {% for product in featured_products %}
-    <div class="col-md-3 mb-4">
-        <div class="card product-card h-100">
-            <img src="{{ product.image_url() }}"
-                 class="card-img-top product-img" alt="{{ product.name }}">
-            <div class="card-body d-flex flex-column">
-                <h5 class="card-title">{{ product.name }}</h5>
-                <p class="card-text">{{ product.description|truncate(50) }}</p>
-                <div class="mt-auto">
-                    <div class="mb-2">
-                        <span class="fw-bold">{{ "%.2f"|format(product.price) }}đ</span>
-                        {% if product.get_average_rating() > 0 %}
-                            <span class="float-end rating">
-                                {{ product.get_average_rating() }} <i class="bi bi-star-fill"></i>
-                            </span>
-                        {% endif %}
-                    </div>
-                    <a href="{{ url_for('product.detail', id=product.id) }}" class="btn btn-sm btn-outline-primary">Xem chi tiết</a>
+<!-- Welcome Section -->
+<div class="container mb-5">
+    <div class="row align-items-center">
+        <div class="col-md-6">
+            <h1 class="display-4 fw-bold mb-4">Chào mừng đến với LSB Store</h1>
+            <p class="lead mb-4">Khám phá những sản phẩm tuyệt vời với giá cả phải chăng. Chúng tôi cam kết mang đến cho bạn trải nghiệm mua sắm tốt nhất.</p>
+            <a href="{{ url_for('product.list_products') }}" class="btn btn-primary btn-lg">Mua sắm ngay</a>
+        </div>
+        <div class="col-md-6 text-center">
+            <div class="welcome-icon">
+                <i class="bi bi-shop display-1 text-primary mb-3"></i>
+                <div class="welcome-decoration">
+                    <i class="bi bi-star-fill text-warning"></i>
+                    <i class="bi bi-star-fill text-warning"></i>
+                    <i class="bi bi-star-fill text-warning"></i>
+                    <i class="bi bi-star-fill text-warning"></i>
+                    <i class="bi bi-star-fill text-warning"></i>
                 </div>
             </div>
         </div>
     </div>
-    {% endfor %}
 </div>
+
+<!-- Featured Products -->
+<div class="container mb-5">
+    <h2 class="text-center mb-4">Sản phẩm nổi bật</h2>
+    <div class="row g-4">
+        {% for product in featured_products %}
+        <div class="col-md-3">
+            <div class="card h-100 shadow-sm hover-shadow">
+                <div class="position-relative">
+                    <img src="{{ product.image_url() }}" class="card-img-top product-img" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
+                    {% if product.get_average_rating() > 0 %}
+                    <div class="position-absolute top-0 end-0 m-2">
+                        <span class="badge bg-warning text-dark">
+                            {{ product.get_average_rating() }} <i class="bi bi-star-fill"></i>
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text text-muted">{{ product.description|truncate(50) }}</p>
+                    <div class="mt-auto">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="h5 mb-0 text-primary">{{ "%.2f"|format(product.price) }}đ</span>
+                            <span class="text-muted">Còn {{ product.stock }} sản phẩm</span>
+                        </div>
+                        <a href="{{ url_for('product.detail', id=product.id) }}" class="btn btn-outline-primary w-100">Xem chi tiết</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="container mb-5">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 border-primary">
+                <div class="card-body text-center">
+                    <i class="bi bi-truck text-primary" style="font-size: 2.5rem;"></i>
+                    <h5 class="card-title mt-3">Miễn phí vận chuyển</h5>
+                    <p class="card-text">Cho đơn hàng từ 500.000đ</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-primary">
+                <div class="card-body text-center">
+                    <i class="bi bi-shield-check text-primary" style="font-size: 2.5rem;"></i>
+                    <h5 class="card-title mt-3">Bảo hành chính hãng</h5>
+                    <p class="card-text">Cam kết chất lượng sản phẩm</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-primary">
+                <div class="card-body text-center">
+                    <i class="bi bi-headset text-primary" style="font-size: 2.5rem;"></i>
+                    <h5 class="card-title mt-3">Hỗ trợ 24/7</h5>
+                    <p class="card-text">Luôn sẵn sàng phục vụ bạn</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    transition: transform 0.3s ease;
+}
+.product-img {
+    transition: transform 0.3s ease;
+}
+.card:hover .product-img {
+    transform: scale(1.05);
+}
+.welcome-icon {
+    position: relative;
+    padding: 2rem;
+    background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+    border-radius: 1rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+}
+.welcome-decoration {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.5rem;
+}
+.welcome-decoration i {
+    margin-left: 0.25rem;
+}
+.product-card {
+    transition: transform 0.2s;
+}
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.card-img-top {
+    transition: transform 0.2s;
+}
+.product-card:hover .card-img-top {
+    transform: scale(1.05);
+}
+</style>
 {% endblock %}

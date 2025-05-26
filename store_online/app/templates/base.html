@@ -50,7 +50,9 @@
                                 <ul class="dropdown-menu">
                                     <li><a class="dropdown-item" href="{{ url_for('product.admin_products') }}">Quản lý sản phẩm</a></li>
                                     <li><a class="dropdown-item" href="{{ url_for('event.admin_events') }}">Quản lý sự kiện</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('report.admin_reports') }}">Báo cáo thống kê</a></li>
                                     <li><a class="dropdown-item" href="{{ url_for('order.admin_orders') }}">Quản lý đơn hàng</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.list_customers') }}">Quản lý khách hàng</a></li>
                                 </ul>
                             </li>
                         {% endif %}
@@ -59,7 +61,7 @@
                                 {{ current_user.username }}
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ url_for('order.order_history') }}">Đơn hàng của tôi</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('order.orders') }}">Đơn hàng của tôi</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Đăng xuất</a></li>
                             </ul>
