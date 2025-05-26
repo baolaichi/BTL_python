@@ -1,21 +1,30 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from app import db, login_manager
+from datetime import datetime
 
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), index=True, unique=True, nullable=False)
-    email = db.Column(db.String(120), index=True, unique=True, nullable=False)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
     is_admin = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    # Thêm các relationships
-    orders = db.relationship('Order', backref='customer', lazy='dynamic')
-    reviews = db.relationship('Review', backref='author', lazy='dynamic')
-    cart_items = db.relationship('CartItem', backref='user', lazy='dynamic')
+    # Relationships
+    orders = db.relationship('Order', back_populates='user', lazy=True)
+    reviews = db.relationship('Review', back_populates='author', lazy='dynamic')
+    cart = db.relationship('Cart', back_populates='user', uselist=False, cascade='all, delete-orphan')
+
+    @property
+    def cart_items(self):
+        """Trả về danh sách các mục trong giỏ hàng của user"""
+        if self.cart:
+            return self.cart.items
+        return []
 
     def __repr__(self):
         return f'<User {self.username}>'

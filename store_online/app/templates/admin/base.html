@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'home.index' %}active{% endif %}" 
+                           href="{{ url_for('home.index') }}">
+                            <i class="fas fa-home"></i>
+                            Trang chủ
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'admin.admin_products' %}active{% endif %}" 
+                           href="{{ url_for('admin.admin_products') }}">
+                            <i class="fas fa-box"></i>
+                            Quản lý sản phẩm
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'order.admin_orders' %}active{% endif %}" 
+                           href="{{ url_for('order.admin_orders') }}">
+                            <i class="fas fa-shopping-cart"></i>
+                            Quản lý đơn hàng
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'admin.admin_customers' %}active{% endif %}" 
+                           href="{{ url_for('admin.admin_customers') }}">
+                            <i class="fas fa-users"></i>
+                            Quản lý khách hàng
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'admin.admin_events' %}active{% endif %}" 
+                           href="{{ url_for('admin.admin_events') }}">
+                            <i class="fas fa-calendar"></i>
+                            Quản lý sự kiện
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'admin.admin_reports' %}active{% endif %}" 
+                           href="{{ url_for('admin.admin_reports') }}">
+                            <i class="fas fa-chart-bar"></i>
+                            Báo cáo thống kê
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show mt-3" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            {% block admin_content %}{% endblock %}
+        </main>
+    </div>
+</div>
+{% endblock %} 

@@ -3,83 +3,103 @@
 {% block content %}
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Quản lý sự kiện</h1>
+        <div>
+            <h1 class="h2 mb-0">Quản lý sự kiện</h1>
+            <p class="text-muted">Quản lý các sự kiện và khuyến mãi của cửa hàng</p>
+        </div>
         <a href="{{ url_for('event.add_event') }}" class="btn btn-primary">
             <i class="bi bi-plus-lg"></i> Thêm sự kiện mới
         </a>
     </div>
 
     {% if events %}
-    <div class="card">
+    <div class="card shadow-sm">
         <div class="card-body">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Hình ảnh</th>
-                        <th>Tiêu đề</th>
-                        <th>Thời gian</th>
-                        <th>Trạng thái</th>
-                        <th>Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for event in events %}
-                    <tr>
-                        <td>
-                            <img src="{{ event.image_url() }}" alt="{{ event.title }}" class="img-thumbnail" style="width: 200px; height: 67px; object-fit: cover;">
-                        </td>
-                        <td>{{ event.title }}</td>
-                        <td>
-                            {{ event.start_date.strftime('%d/%m/%Y %H:%M') }} - 
-                            {{ event.end_date.strftime('%d/%m/%Y %H:%M') }}
-                        </td>
-                        <td>
-                            {% if event.is_active %}
-                            <span class="badge bg-success">Đang hoạt động</span>
-                            {% else %}
-                            <span class="badge bg-secondary">Đã kết thúc</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <div class="btn-group">
-                                <a href="{{ url_for('event.edit_event', id=event.id) }}" class="btn btn-sm btn-outline-primary">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ event.id }}">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 200px">Hình ảnh</th>
+                            <th>Tiêu đề</th>
+                            <th>Thời gian</th>
+                            <th>Trạng thái</th>
+                            <th style="width: 100px">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for event in events %}
+                        <tr>
+                            <td>
+                                <img src="{{ event.image_url() }}" alt="{{ event.title }}" class="img-thumbnail" style="width: 200px; height: 67px; object-fit: cover;">
+                            </td>
+                            <td>
+                                <h6 class="mb-0">{{ event.title }}</h6>
+                                <small class="text-muted">{{ event.description|truncate(50) }}</small>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column">
+                                    <small class="text-muted">Bắt đầu:</small>
+                                    <span>{{ event.start_date.strftime('%d/%m/%Y %H:%M') }}</span>
+                                    <small class="text-muted">Kết thúc:</small>
+                                    <span>{{ event.end_date.strftime('%d/%m/%Y %H:%M') }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                {% if event.is_active %}
+                                <span class="badge bg-success">Đang hoạt động</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Đã kết thúc</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{{ url_for('event.edit_event', id=event.id) }}" class="btn btn-sm btn-outline-primary" title="Chỉnh sửa">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ event.id }}" title="Xóa">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
 
-                            <!-- Delete Modal -->
-                            <div class="modal fade" id="deleteModal{{ event.id }}" tabindex="-1">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">Xác nhận xóa</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            Bạn có chắc chắn muốn xóa sự kiện "{{ event.title }}"?
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                                            <form action="{{ url_for('event.delete_event', id=event.id) }}" method="POST" class="d-inline">
-                                                <button type="submit" class="btn btn-danger">Xóa</button>
-                                            </form>
+                                <!-- Delete Modal -->
+                                <div class="modal fade" id="deleteModal{{ event.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Xác nhận xóa</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Bạn có chắc chắn muốn xóa sự kiện "{{ event.title }}"?</p>
+                                                <p class="text-danger mb-0"><small>Hành động này không thể hoàn tác.</small></p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                                <form action="{{ url_for('event.delete_event', id=event.id) }}" method="POST" class="d-inline">
+                                                    <button type="submit" class="btn btn-danger">Xóa</button>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     {% else %}
-    <div class="alert alert-info">
-        Chưa có sự kiện nào. <a href="{{ url_for('event.add_event') }}">Thêm sự kiện mới</a> để bắt đầu.
+    <div class="card shadow-sm">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-calendar-event display-1 text-muted mb-3"></i>
+            <h3 class="h4 mb-3">Chưa có sự kiện nào</h3>
+            <p class="text-muted mb-4">Bắt đầu thêm sự kiện mới để quảng bá cửa hàng của bạn</p>
+            <a href="{{ url_for('event.add_event') }}" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> Thêm sự kiện mới
+            </a>
+        </div>
     </div>
     {% endif %}
 </div>

@@ -2,124 +2,127 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from datetime import datetime
 from app.models.order import Order, OrderItem
-from app.models.cart import CartItem
+from app.models.cart import Cart, CartItem
 from app.models.product import Product
 from app.views.order_view import CheckoutForm
 from app import db
 
 order_bp = Blueprint('order', __name__)
 
-
+# Customer routes
 @order_bp.route('/checkout', methods=['GET', 'POST'])
 @login_required
 def checkout():
-    cart_items = CartItem.query.filter_by(user_id=current_user.id).all()
-
-    if not cart_items:
-        flash('Your cart is empty', 'warning')
-        return redirect(url_for('cart.view_cart'))
-
-    # Check stock availability
-    for item in cart_items:
-        if item.quantity > item.product.stock:
-            flash(f'Sorry, {item.product.name} only has {item.product.stock} items left in stock', 'danger')
-            return redirect(url_for('cart.view_cart'))
-
     form = CheckoutForm()
-
-    if form.validate_on_submit():
-        # Create order
-        total_amount = sum(item.get_total_price() for item in cart_items)
+    if request.method == 'POST':
+        cart = Cart.query.filter_by(user_id=current_user.id).first()
+        if not cart or not cart.items:
+            flash('Giỏ hàng trống', 'warning')
+            return redirect(url_for('cart.view_cart'))
+        
+        # Tạo đơn hàng mới
         order = Order(
             user_id=current_user.id,
-            total_amount=total_amount,
-            shipping_address=form.shipping_address.data,
-            payment_method=form.payment_method.data
+            total_amount=cart.get_total(),
+            shipping_address=request.form.get('shipping_address'),
+            payment_method=request.form.get('payment_method', 'cod')
         )
         db.session.add(order)
-        db.session.commit()
-
-        # Create order items and update product stock
-        for item in cart_items:
+        
+        # Chuyển sản phẩm từ giỏ hàng sang đơn hàng
+        for item in cart.items:
             order_item = OrderItem(
-                order_id=order.id,
+                order=order,
                 product_id=item.product_id,
                 quantity=item.quantity,
-                price=item.product.price
+                price=item.product.get_discounted_price()
             )
             db.session.add(order_item)
-
-            # Update product stock
-            product = Product.query.get(item.product_id)
-            product.stock -= item.quantity
-
-        # Clear cart
-        CartItem.query.filter_by(user_id=current_user.id).delete()
+            
+            # Cập nhật số lượng sản phẩm
+            item.product.stock -= item.quantity
+        
+        # Xóa giỏ hàng
+        db.session.delete(cart)
         db.session.commit()
+        
+        flash('Đặt hàng thành công!', 'success')
+        return redirect(url_for('order.order_detail', order_id=order.id))
+    
+    cart = Cart.query.filter_by(user_id=current_user.id).first()
+    if not cart or not cart.items:
+        flash('Giỏ hàng trống', 'warning')
+        return redirect(url_for('cart.view_cart'))
+    
+    total = cart.get_total()
+    return render_template('order/checkout.html', cart=cart, form=form, total=total)
 
-        flash('Your order has been placed successfully!', 'success')
-        return redirect(url_for('order.order_detail', id=order.id))
-
-    # Pre-fill form if user has previous orders
-    last_order = Order.query.filter_by(user_id=current_user.id).order_by(Order.created_at.desc()).first()
-    if last_order:
-        form.shipping_address.data = last_order.shipping_address
-
-    total = sum(item.get_total_price() for item in cart_items)
-    return render_template('order/checkout.html', form=form, total=total)
-
-
-@order_bp.route('/<int:id>')
+@order_bp.route('/orders')
 @login_required
-def order_detail(id):
-    order = Order.query.get_or_404(id)
-
-    if order.user_id != current_user.id and not current_user.is_admin:
-        flash('You do not have permission to view this order', 'danger')
-        return redirect(url_for('home.index'))
-
-    return render_template('order/detail.html', order=order)
-
-
-@order_bp.route('/history')
-@login_required
-def order_history():
+def orders():
     orders = Order.query.filter_by(user_id=current_user.id).order_by(Order.created_at.desc()).all()
-    return render_template('order/history.html', orders=orders)
+    return render_template('order/orders.html', orders=orders)
 
+@order_bp.route('/order/<int:order_id>')
+@login_required
+def order_detail(order_id):
+    order = Order.query.get_or_404(order_id)
+    if order.user_id != current_user.id and not current_user.is_admin:
+        flash('Bạn không có quyền xem đơn hàng này', 'danger')
+        return redirect(url_for('order.orders'))
+    return render_template('order/order_detail.html', order=order)
 
-@order_bp.route('/admin')
+# Admin routes
+@order_bp.route('/admin/orders')
 @login_required
 def admin_orders():
     if not current_user.is_admin:
-        flash('You do not have permission to access this page', 'danger')
+        flash('Bạn không có quyền truy cập trang này', 'danger')
         return redirect(url_for('home.index'))
-
-    status = request.args.get('status', 'all')
+    
+    status = request.args.get('status')
     query = Order.query
-
-    if status != 'all':
+    if status:
         query = query.filter_by(status=status)
-
     orders = query.order_by(Order.created_at.desc()).all()
-    return render_template('admin/orders.html', orders=orders, status=status)
+    return render_template('admin/orders.html', orders=orders)
 
-
-@order_bp.route('/admin/<int:id>/update', methods=['POST'])
+@order_bp.route('/admin/order/<int:order_id>')
 @login_required
-def admin_update_order(id):
+def admin_view_order(order_id):
     if not current_user.is_admin:
-        flash('You do not have permission to access this page', 'danger')
+        flash('Bạn không có quyền truy cập trang này', 'danger')
         return redirect(url_for('home.index'))
+    
+    order = Order.query.get_or_404(order_id)
+    return render_template('admin/order_detail.html', order=order)
 
-    order = Order.query.get_or_404(id)
-    new_status = request.form.get('status')
-
-    if new_status in ['pending', 'processing', 'shipped', 'delivered', 'cancelled']:
-        order.status = new_status
+@order_bp.route('/admin/order/<int:order_id>/edit', methods=['GET', 'POST'])
+@login_required
+def admin_edit_order(order_id):
+    if not current_user.is_admin:
+        flash('Bạn không có quyền truy cập trang này', 'danger')
+        return redirect(url_for('home.index'))
+    
+    order = Order.query.get_or_404(order_id)
+    if request.method == 'POST':
+        order.status = request.form.get('status')
+        order.shipping_address = request.form.get('shipping_address')
         db.session.commit()
-        flash('Order status updated', 'success')
-    else:
-        flash('Invalid status', 'danger')
+        flash('Cập nhật đơn hàng thành công!', 'success')
+        return redirect(url_for('order.admin_view_order', order_id=order.id))
+    
+    return render_template('admin/edit_order.html', order=order)
 
-    return redirect(url_for('order.admin_orders', status=request.args.get('status', 'all')))
+@order_bp.route('/admin/order/<int:order_id>/delete', methods=['POST'])
+@login_required
+def admin_delete_order(order_id):
+    if not current_user.is_admin:
+        flash('Bạn không có quyền truy cập trang này', 'danger')
+        return redirect(url_for('home.index'))
+    
+    order = Order.query.get_or_404(order_id)
+    db.session.delete(order)
+    db.session.commit()
+    flash('Xóa đơn hàng thành công!', 'success')
+    return redirect(url_for('order.admin_orders'))

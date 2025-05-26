@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Sản phẩm</h1>
+
+    <!-- Search Form -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <form method="get" class="form-inline">
+                <div class="input-group w-100">
+                    <input type="text" name="search" class="form-control" placeholder="Tìm kiếm sản phẩm..." value="{{ search_query }}">
+                    <select name="category" class="form-select mx-2">
+                        <option value="">Chọn danh mục</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" {% if selected_category == category.id %}selected{% endif %}>{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <button class="btn btn-primary" type="submit">Tìm kiếm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+        {% for product in products.items %}
+        <div class="col">
+            <div class="card h-100 product-card">
+                <img src="{{ product.image_url() }}" class="card-img-top" alt="{{ product.name }}" 
+                     style="height: 200px; object-fit: cover;">
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text text-truncate">{{ product.description }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            {% if product.get_discounted_price() < product.price %}
+                                <span class="text-danger fw-bold">{{ "{:,.0f}".format(product.get_discounted_price()) }} VNĐ</span>
+                                <small class="text-muted text-decoration-line-through">{{ "{:,.0f}".format(product.price) }} VNĐ</small>
+                            {% else %}
+                                <span class="text-primary fw-bold">{{ "{:,.0f}".format(product.price) }} VNĐ</span>
+                            {% endif %}
+                        </div>
+                        <span class="badge bg-{{ 'success' if product.stock > 0 else 'danger' }}">
+                            {{ 'Còn hàng' if product.stock > 0 else 'Hết hàng' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-footer bg-white border-top-0">
+                    <a href="{{ url_for('product.detail', id=product.id) }}" class="btn btn-primary w-100">
+                        Xem chi tiết
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if products.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('product.list_products', page=products.prev_num, search=search_query, category=selected_category) }}">Trang trước</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="#">Trang trước</a>
+                </li>
+            {% endif %}
+
+            {% for page_num in products.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=3) %}
+                {% if page_num %}
+                    <li class="page-item {% if products.page == page_num %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('product.list_products', page=page_num, search=search_query, category=selected_category) }}">{{ page_num }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if products.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('product.list_products', page=products.next_num, search=search_query, category=selected_category) }}">Trang sau</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="#">Trang sau</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+
+<style>
+.product-card {
+    transition: transform 0.2s;
+}
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.card-img-top {
+    transition: transform 0.2s;
+}
+.product-card:hover .card-img-top {
+    transform: scale(1.05);
+}
+</style>
+{% endblock %} 

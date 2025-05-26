@@ -9,7 +9,7 @@ home_bp = Blueprint('home', __name__)
 def index():
     # Lấy danh sách sự kiện đang hoạt động
     events = Event.query.filter(
-        Event.is_active == True,
+        Event.status == 'active',
         Event.start_date <= datetime.utcnow(),
         Event.end_date >= datetime.utcnow()
     ).order_by(Event.start_date.desc()).all()

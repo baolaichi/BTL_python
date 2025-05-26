@@ -28,6 +28,8 @@ def create_app(config_class=Config):
     from app.controllers.cart_controller import cart_bp
     from app.controllers.order_controller import order_bp
     from app.controllers.event_controller import event_bp
+    from app.controllers.report_controller import report_bp
+    from app.controllers.admin_controller import admin_bp
 
     app.register_blueprint(home_bp)
     app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -35,6 +37,8 @@ def create_app(config_class=Config):
     app.register_blueprint(cart_bp, url_prefix='/cart')
     app.register_blueprint(order_bp, url_prefix='/order')
     app.register_blueprint(event_bp, url_prefix='/event')
+    app.register_blueprint(report_bp, url_prefix='/report')
+    app.register_blueprint(admin_bp, url_prefix='/admin')
 
     # Create tables
     with app.app_context():

@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Bảng điều khiển</h2>
+    
+    <!-- Menu quản trị -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quản trị hệ thống</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('product.admin_products') }}" class="btn btn-primary w-100">
+                                <i class="fas fa-box"></i> Quản lý sản phẩm
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('admin.list_customers') }}" class="btn btn-info w-100">
+                                <i class="fas fa-users"></i> Quản lý khách hàng
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('order.admin_orders') }}" class="btn btn-success w-100">
+                                <i class="fas fa-shopping-cart"></i> Quản lý đơn hàng
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('event.admin_events') }}" class="btn btn-warning w-100">
+                                <i class="fas fa-calendar"></i> Quản lý sự kiện
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Xuất báo cáo -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Xuất báo cáo</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('report.export_top_products') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-file-excel"></i> Top sản phẩm bán chạy
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('report.export_top_customers') }}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-file-excel"></i> Top khách hàng
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('report.export_sales_by_date') }}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-file-excel"></i> Doanh số theo ngày
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{{ url_for('report.sales_report') }}" class="btn btn-outline-warning w-100">
+                                <i class="fas fa-chart-line"></i> Báo cáo doanh số
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thống kê tổng quan -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Tổng số khách hàng</h5>
+                    <h2 class="card-text">{{ total_users }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Tổng số sản phẩm</h5>
+                    <h2 class="card-text">{{ total_products }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Tổng số đơn hàng</h5>
+                    <h2 class="card-text">{{ total_orders }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Tổng số sự kiện</h5>
+                    <h2 class="card-text">{{ total_events }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Doanh thu gần đây -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Doanh thu 30 ngày gần nhất</h5>
+                    <h3 class="text-success">{{ "{:,.0f}".format(recent_revenue) }}đ</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Đơn hàng gần đây -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Đơn hàng gần đây</h5>
+                    <a href="{{ url_for('order.admin_orders') }}" class="btn btn-sm btn-primary">Xem tất cả</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Khách hàng</th>
+                                    <th>Tổng tiền</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in recent_orders %}
+                                <tr>
+                                    <td>{{ order.id }}</td>
+                                    <td>{{ order.user.username }}</td>
+                                    <td>{{ "{:,.0f}".format(order.total_amount) }}đ</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if order.status == 'completed' else 'warning' }}">
+                                            {{ order.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sản phẩm sắp hết hàng -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Sản phẩm sắp hết hàng</h5>
+                    <a href="{{ url_for('product.admin_products') }}" class="btn btn-sm btn-primary">Xem tất cả</a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Tên sản phẩm</th>
+                                    <th>Tồn kho</th>
+                                    <th>Giá</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in low_stock_products %}
+                                <tr>
+                                    <td>{{ product.name }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'danger' if product.stock == 0 else 'warning' }}">
+                                            {{ product.stock }}
+                                        </span>
+                                    </td>
+                                    <td>{{ "{:,.0f}".format(product.price) }}đ</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

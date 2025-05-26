@@ -1,52 +1,61 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container">
+<div class="container py-5">
     <div class="row">
+        <!-- Product Image -->
         <div class="col-md-6">
-            <img src="{{ product.image_url() }}"
-                 class="img-fluid rounded" alt="{{ product.name }}">
+            <img src="{{ product.image_url() }}" class="img-fluid rounded" alt="{{ product.name }}">
         </div>
+        
+        <!-- Product Info -->
         <div class="col-md-6">
-            <h1>{{ product.name }}</h1>
-            <div class="mb-3">
-                {% if product.get_average_rating() > 0 %}
-                    <span class="rating">
-                        {{ product.get_average_rating() }} <i class="bi bi-star-fill"></i>
-                        ({{ product.reviews.count() }} đánh giá)
-                    </span>
+            <h1 class="mb-3">{{ product.name }}</h1>
+            <p class="text-muted mb-4">{{ product.description }}</p>
+            
+            <div class="mb-4">
+                {% if product.get_discounted_price() < product.price %}
+                    <h2 class="text-danger mb-2">{{ "{:,.0f}".format(product.get_discounted_price()) }} VNĐ</h2>
+                    <h4 class="text-muted text-decoration-line-through">{{ "{:,.0f}".format(product.price) }} VNĐ</h4>
                 {% else %}
-                    <span class="text-muted">Chưa có đánh giá</span>
-                {% endif %}
-            </div>
-            <h3 class="text-primary">{{ "%.2f"|format(product.price) }}đ</h3>
-
-            <div class="mb-3">
-                {% if product.stock > 0 %}
-                    <span class="text-success">Còn hàng ({{ product.stock }} sản phẩm)</span>
-                {% else %}
-                    <span class="text-danger">Hết hàng</span>
+                    <h2 class="text-primary">{{ "{:,.0f}".format(product.price) }} VNĐ</h2>
                 {% endif %}
             </div>
 
-            <p>{{ product.description }}</p>
-
-            <div class="mb-3">
-                <strong>Danh mục:</strong> {{ product.category|title }}
+            <div class="mb-4">
+                <span class="badge bg-{{ 'success' if product.stock > 0 else 'danger' }} p-2">
+                    {{ 'Còn hàng' if product.stock > 0 else 'Hết hàng' }}
+                </span>
             </div>
 
             {% if product.stock > 0 %}
-                <form method="POST" action="{{ url_for('cart.add_to_cart', product_id=product.id) }}">
-                    <div class="row mb-3">
-                        <div class="col-md-3">
-                            <input type="number" class="form-control" name="quantity" value="1" min="1" max="{{ product.stock }}">
-                        </div>
-                        <div class="col-md-9">
-                            <button type="submit" class="btn btn-primary">Thêm vào giỏ hàng</button>
-                        </div>
+            <form action="{{ url_for('cart.add_to_cart', product_id=product.id) }}" method="POST" class="mb-4">
+                <div class="row g-3 align-items-center">
+                    <div class="col-auto">
+                        <label for="quantity" class="col-form-label">Số lượng:</label>
                     </div>
-                </form>
+                    <div class="col-auto">
+                        <input type="number" id="quantity" name="quantity" class="form-control" 
+                               value="1" min="1" max="{{ product.stock }}">
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-cart-plus"></i> Thêm vào giỏ
+                        </button>
+                    </div>
+                </div>
+            </form>
             {% endif %}
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Thông tin sản phẩm</h5>
+                    <ul class="list-unstyled">
+                        <li><strong>Danh mục:</strong> {{ product.category.name }}</li>
+                        <li><strong>Số lượng còn lại:</strong> {{ product.stock }}</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 

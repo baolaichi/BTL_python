@@ -9,25 +9,54 @@ class Product(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=False)
+    description = db.Column(db.Text)
     price = db.Column(db.Float, nullable=False)
-    image = db.Column(db.String(100))
     stock = db.Column(db.Integer, nullable=False, default=0)
-    category = db.Column(db.String(50))
+    image = db.Column(db.String(200))
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    reviews = db.relationship('Review', backref='product', lazy='dynamic')
-    order_items = db.relationship('OrderItem', backref='product', lazy='dynamic')
+    # Relationships
+    category = db.relationship('Category', back_populates='products')
+    cart_items = db.relationship('CartItem', back_populates='product', cascade='all, delete-orphan')
+    order_items = db.relationship('OrderItem', back_populates='product', cascade='all, delete-orphan')
+    reviews = db.relationship('Review', back_populates='product', cascade='all, delete-orphan')
+    ratings = db.relationship('Rating', back_populates='product', cascade='all, delete-orphan')
     
     def __repr__(self):
         return f'<Product {self.name}>'
     
+    def get_discounted_price(self):
+        """Lấy giá sau khi áp dụng giảm giá từ sự kiện"""
+        if self.category and self.category.events:
+            active_event = next(
+                (event for event in self.category.events if event.is_active),
+                None
+            )
+            if active_event and active_event.discount_percent > 0:
+                return self.price * (1 - active_event.discount_percent / 100)
+        return self.price
+    
     def get_average_rating(self):
-        if self.reviews.count() == 0:
+        if not self.reviews:
             return 0
-        total = sum(review.rating for review in self.reviews)
-        return round(total / self.reviews.count(), 1)
+        return sum(review.rating for review in self.reviews) / len(self.reviews)
     
     def image_url(self):
         if self.image:
             return url_for('static', filename=f'images/products/{self.image}')
-        return url_for('static', filename='images/placeholder.png')
+        return url_for('static', filename='images/default_product.jpg')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'price': self.price,
+            'discounted_price': self.get_discounted_price(),
+            'stock': self.stock,
+            'image_url': self.image_url(),
+            'category_id': self.category_id,
+            'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'average_rating': self.get_average_rating()
+        }
